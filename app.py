@@ -26,8 +26,6 @@ else:
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 
 
-
-
 def hello_world(args):
     """
     Runs Jina's Hello World.
@@ -45,28 +43,29 @@ def hello_world(args):
     :param args: Argparse object
     """
 
-    Path(args.workdir).mkdir(parents=True, exist_ok=True)
-
+    # Path(args.workdir).mkdir(parents=True, exist_ok=True)
+    args.workdir = './dataset'
     targets = {
         'index-labels': {
             'url': args.index_labels_url,
-            'filename': os.path.join(args.workdir, 'index-labels'),
+            'filename': os.path.join(args.workdir, 'index-labels.npz'),
         },
         'query-labels': {
             'url': args.query_labels_url,
-            'filename': os.path.join(args.workdir, 'query-labels'),
+            'filename': os.path.join(args.workdir, 'query-labels.npz'),
         },
         'index': {
             'url': args.index_data_url,
-            'filename': os.path.join(args.workdir, 'index-original'),
+            'filename': os.path.join(args.workdir, 'index-original.npz'),
         },
         'query': {
             'url': args.query_data_url,
-            'filename': os.path.join(args.workdir, 'query-original'),
+            'filename': os.path.join(args.workdir, 'query-original.npz'),
         },
     }
 
     # download the data
+
     download_data(targets, args.download_proxy)
 
     # now comes the real work

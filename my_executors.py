@@ -48,7 +48,7 @@ class MyEncoder(Executor):
         super().__init__(**kwargs)
         np.random.seed(1337)        
         # generate a random orthogonal matrix
-        H = np.random.rand(784, 64)
+        H = np.random.rand(6400 * 3, 512)
         u, s, vh = np.linalg.svd(H, full_matrices=False)
         self.oth_mat = u @ vh
 
@@ -61,11 +61,11 @@ class MyEncoder(Executor):
         """
         # reduce dimension to 50 by random orthogonal projection
         content = np.stack(docs.get_attributes('content'))
-        content = content[:, :, :, 0].reshape(-1, 784)
-        embeds = (content / 255) @ self.oth_mat
+        content = content[:, :, :, :].reshape(-1, 6400 * 3)
+        embeds = (content / 255) @ self.oth_mat        
         for doc, embed, cont in zip(docs, embeds, content):
             doc.embedding = embed
-            doc.content = cont
+            doc.content = cont            
             doc.convert_image_blob_to_uri()
             doc.pop('blob')
 
