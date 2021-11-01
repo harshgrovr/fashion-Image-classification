@@ -58,6 +58,7 @@ def index_generator(num_docs: int, target: dict):
         # x_color.shape is (28,28,3)
         label = int(target['index-labels']['data'][internal_doc_id][0])
         x_color = np.stack((x_blackwhite,) * 3, axis=-1)
+        # Add class label to the documents
         d = Document(content=x_color, tags={'label': label})        
         d.tags['id'] = internal_doc_id        
         yield d

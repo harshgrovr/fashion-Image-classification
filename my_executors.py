@@ -141,11 +141,12 @@ class MyEvaluator(Executor):
         for doc, groundtruth in zip(docs, groundtruths):
             self.num_docs += 1                                 
             actual = [match.tags['id'] for match in doc.matches]            
+            # get matches classes and select the max of classes and assign it to query image doc
             classes = [match.tags['label'] for match in doc.matches]                      
+            doc.id = int(max(classes))
             desired = groundtruth.matches[0].tags['id']  # pseudo_match
             self.total_precision += self._precision(actual, desired)
-            self.total_recall += self._recall(actual, desired)
-            doc.id = int(max(classes))            
+            self.total_recall += self._recall(actual, desired)            
             doc.evaluations['Precision'] = self.avg_precision
             doc.evaluations['Precision'].op_name = 'Precision'
             doc.evaluations['Recall'] = self.avg_recall
