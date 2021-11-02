@@ -34,7 +34,7 @@ def hello_world(args):
         Use it via CLI :command:`jina hello-world`.
 
     Description:
-        It downloads Fashion-MNIST dataset and :term:`Indexer<indexes>` 50,000 images.
+        :term:`Indexer<indexes>` 10,000 images.
         The index is stored into 4 *shards*. It randomly samples 128 unseen images as :term:`Queries<Searching>`
         Results are shown in a webpage.
 

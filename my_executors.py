@@ -17,7 +17,6 @@ class MyIndexer(Executor):
     @requests(on='/index')
     def index(self, docs: 'DocumentArray', **kwargs):
         """Extend self._docs
-
         :param docs: DocumentArray containing Documents
         :param kwargs: other keyword arguments
         """
@@ -26,7 +25,6 @@ class MyIndexer(Executor):
     @requests(on=['/search', '/eval'])
     def search(self, docs: 'DocumentArray', parameters: Dict, **kwargs):
         """Append best matches to each document in docs
-
         :param docs: documents that are searched
         :param parameters: dictionary of pairs (parameter,value)
         :param kwargs: other keyword arguments
@@ -38,7 +36,6 @@ class MyIndexer(Executor):
             limit=int(parameters['top_k']),
         )
 
-
 class MyEncoder(Executor):
     """
     Encode data using SVD decomposition
@@ -46,29 +43,27 @@ class MyEncoder(Executor):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        np.random.seed(1337)        
+        np.random.seed(1337)
         # generate a random orthogonal matrix
-        H = np.random.rand(6400 * 3, 512)
+        H = np.random.rand(6400, 64)
         u, s, vh = np.linalg.svd(H, full_matrices=False)
         self.oth_mat = u @ vh
 
     @requests
     def encode(self, docs: 'DocumentArray', **kwargs):
         """Encode the data using an SVD decomposition
-
         :param docs: input documents to update with an embedding
         :param kwargs: other keyword arguments
         """
         # reduce dimension to 50 by random orthogonal projection
         content = np.stack(docs.get_attributes('content'))
-        content = content[:, :, :, :].reshape(-1, 6400 * 3)
-        embeds = (content / 255) @ self.oth_mat        
+        content = content[:, :, :, 0].reshape(-1, 6400)
+        embeds = (content / 255) @ self.oth_mat
         for doc, embed, cont in zip(docs, embeds, content):
             doc.embedding = embed
-            doc.content = cont            
+            doc.content = cont
             doc.convert_image_blob_to_uri()
             doc.pop('blob')
-
 
 class MyConverter(Executor):
     """
@@ -139,13 +134,14 @@ class MyEvaluator(Executor):
         :param kwargs: other keyword arguments
         """
         for doc, groundtruth in zip(docs, groundtruths):
-            self.num_docs += 1                                 
-            actual = [match.tags['id'] for match in doc.matches]            
+            self.num_docs += 1                                             
+            actual = [match.tags['id'] for match in doc.matches]                        
+            # get matches classes and select the max of classes and assign it to query image doc
             classes = [match.tags['label'] for match in doc.matches]                      
+            doc.id = int(max(classes))
             desired = groundtruth.matches[0].tags['id']  # pseudo_match
             self.total_precision += self._precision(actual, desired)
-            self.total_recall += self._recall(actual, desired)
-            doc.id = int(max(classes))            
+            self.total_recall += self._recall(actual, desired)            
             doc.evaluations['Precision'] = self.avg_precision
             doc.evaluations['Precision'].op_name = 'Precision'
             doc.evaluations['Recall'] = self.avg_recall
